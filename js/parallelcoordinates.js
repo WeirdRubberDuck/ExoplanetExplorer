@@ -273,18 +273,34 @@ function ParallelCoordinatesChart(chartId, data, options) {
     .attr("fill", "darkgray");
 
   function clearBrushes() {
-    console.log("Clearing brushes...");
-
-    let startTime = performance.now();
+    // Check which brushes need clearing
+    let brushesToClear = [];
     d3.selectAll(".brush").each(function(d) {
-      d3.select(this).call(yScales[d].brush.clear);
+      console.log(yScales[d].brushSelectionValue);
+      if (yScales[d].brushSelectionValue) {
+        brushesToClear.push(d);
+      };
+      d3.select(this).classed("toClear", true);
+    });
+    if (brushesToClear.length === 0) {
+      console.log("No need to clear brushes");
+      return;
+    }
+
+    console.log("Clearing brushes...");
+    let startTime = performance.now();
+    d3.selectAll(".toClear").each(function(d) {
+      d3.select(this)
+        .classed("toClear", false)
+        .call(yScales[d].brush.clear);
     });
     nanBrushes = {};
+    
     brush();
     d3.selectAll(".nanBrush").attr("fill", "darkgray")
 
     var endTime = performance.now();
-    console.log(`Clearing brushed took ${endTime - startTime} milliseconds`)
+    console.log(`Clearing brushes took ${endTime - startTime} milliseconds`)
 
     cfg.clearBrushesCallback();
   };
