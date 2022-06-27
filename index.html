@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <title>Exoplanet Explorer</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" type="text/css" href="./style.css">
+        
+    <!-- Scripts --> 
+    <script src="https://d3js.org/d3.v7.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script src="./api/openspace-api.js"></script>
+    <script src="./js/openspace-connect.js"></script>
+    <script src="./js/parallelcoordinates.js"></script>
+    <script src="./js/scatterplotmatrix.js"></script>
+    <script src="./js/ext/colormap-legend.js"></script>
+    <script src="./js/ext/colormap-swatches.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.24.0/d3-legend.js"></script>
+
+    <!-- Load generated data file -->
+    <!-- OBS! Path must match actual location of the file -->
+    <script src="./../data/aggregated_data.js"></script>
+
+  </head>
+  <body>
+    <script>
+      // OpenSpace connection
+      const hostIp = "localhost";
+      const hostPort = 4682;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        tryConnectToOpenSpace();
+      });
+    </script>
+    <div id="body">
+      <div class="container">
+
+          <div class="toppane">
+            <h1>Exoplanets Explorer</h1>
+          </div>
+
+          <div class="leftpane">
+            <div id="connection-status"></div>
+            <br/>
+            <button onclick=updateFromOpenSpace()>Get rows from OpenSpace</button>
+            <br/> <br/>
+            <button onclick=setSelectionInOpenSpace()>Send selection to OpenSpace</button>
+            <br/> <br/>
+
+            <h3>Color</h3>
+            <p>
+              <label for="colormap-axis-select">Color based on: </label> 
+              <select id="colormap-axis-select"></select>
+              <div class="row">
+                <div id="left-color-handle"></div>
+                <div id="colormap-legend"></div>
+                <div id="right-color-handle"></div>
+              </div>
+              <div class="row">
+                <input 
+                  type="button" 
+                  id="resetColorMap" 
+                  value="Reset from current data"
+                  onclick="resetColorMapButtonClick()"
+                />
+              </div>
+              <div class="row">
+                <input type="checkbox" onclick="onCheckboxSetColorFromSelectionChange(this)">
+                  Range always from current selection
+                </input>
+              </div>
+            </p>
+
+            <div id="column-selection">
+              <button type="button" class="collapsible">Column selection (parallel)</button>
+              <div class="collapsible-content column-selection-content" id="column-selection-parallel"></div>
+
+              <button type="button" class="collapsible">Column selection (scatterplot)</button>
+              <div class="collapsible-content column-selection-content" id="column-selection-matrix"></div>
+            </div>
+
+          </div>
+
+          <div id="middlepane" class="middlepane">
+            <div id="all_charts">
+              <div class="row" id="selection_controls">
+                <button 
+                  type="button" 
+                  class="button"
+                  id="clear-brush-button" 
+                  onclick="clearParallelBrushSelection()"
+                >
+                  <span class="button__text">Clear selection</span>
+                </button>
+              </div>
+              <div class="chartContainer parallel" id="parallel_coords"></div>
+              <div class="charSeparator"></div>
+              <div class="chartContainer scattermatrix" id="scatter_plot_matrix"></div>
+            </div>
+          </div>
+
+          <div class="rightpane">
+            <div id="metaTableInfo"></div>
+            <div id="metaTableContainer"></div>
+          </div>
+
+        </div>
+
+    </div>
+    
+    <script src="./js/colormapping.js"></script>
+    <script src="./js/columnselection.js"></script>
+    <script src="./js/app.js"></script>
+
+    <script>
+      // Handle collapsibles
+      let coll = document.getElementsByClassName("collapsible");
+      for (let i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+          this.classList.toggle("active");
+          var content = this.nextElementSibling;
+          if (content.style.maxHeight){
+            content.style.maxHeight = null;
+          } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+          } 
+        });
+      }
+    </script>
+  </body>
+</html>

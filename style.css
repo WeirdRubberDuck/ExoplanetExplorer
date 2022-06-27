@@ -1,0 +1,198 @@
+body, html {
+  font-family: 'Open Sans', sans-serif;
+  text-align: center;
+  cursor: default;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  color: #333333
+}
+
+.leftpane {
+  width:20%;
+  height: 100%;
+  float: left;
+  border-collapse: collapse;
+  box-sizing: border-box;
+  padding: 1em;
+  padding-left: 1em;
+}
+
+.middlepane {
+  width: 60%;
+  height: 100%;
+  float: left;
+  border-collapse: collapse;
+  box-sizing: border-box;
+  padding: 1em;
+}
+
+.rightpane {
+  width: 20%;
+  height: calc(100vh - 44px);
+  position: fixed;
+  top: 20px;
+  right: 0.8em;
+  border-collapse: collapse;
+  box-sizing: border-box;
+  padding: 0.5em;
+  background-color: white;
+  border: 2px solid gray;
+  border-radius: 15px;
+}
+
+.toppane {
+  width: 100%;
+  height: 3.5em;
+  padding: 0.1em;
+  border-collapse: collapse;
+  background-color: lightgrey;
+  text-align: center;
+  vertical-align:middle;
+}
+
+.toppane h1 {
+  color: #838383;
+  font-family: 'Courier New', monospace;
+  margin-top: 0.2em;
+}
+
+/* Layouting */
+.row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5em;
+}
+
+.row#selection_controls {
+  justify-content: flex-end;
+  padding: 1em;
+}
+
+/* Connection status */
+.disconnected {
+  color: red;
+}
+
+.connected {
+  color: darkturquoise;
+}
+
+/* Special buttons */
+.button {
+  position: relative;
+  padding: 6px 12px;
+  border-width: 1px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: black;
+}
+
+.button:active {
+  border: none;
+  background: lightgray;
+  color: #838383;
+}
+
+
+/* Settings and input */
+label.disabled, input:disabled {
+  color: #ccc;
+}
+
+/* Table */
+
+#metaTableContainer {
+  height: 85vh;
+  overflow-y: scroll;
+}
+
+table {
+  font-size: small;
+  margin: auto;
+}
+ 
+tr.highlighted {
+  background-color: lightblue;
+}
+
+/* Charts */
+.legend {
+  font-family: 'Raleway', sans-serif;
+  fill: #333333;
+}
+
+.tooltip {
+  fill: #333333;
+  background-color: white;
+  border: 2px solid gray;
+  border-radius: 5px;
+  padding: 5px;
+}
+
+.chartContainer {
+  float: center;
+  display: inline;
+}
+
+/* Settings */
+#colormap_legend > svg {
+  margin: auto;
+}
+
+/* Collapsibles */
+
+.collapsible {
+  background-color: rgb(185, 185, 185);
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+.active, .collapsible:hover {
+  background-color: rgb(160, 160, 160);
+}
+
+.collapsible:after {
+  content: '\002B';
+  color: white;
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\2212";
+}
+
+.collapsible-content  {
+  padding: 0 18px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+  background-color: #f1f1f1;
+}
+
+#column-selection {
+  width: 90%;
+  margin: auto;
+}
+
+.column-selection-content li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Parallel coordinates */
+.nanBrush:hover {
+  filter: brightness(120%);
+  stroke: white;
+  r: 6; /* circle radius */
+}
