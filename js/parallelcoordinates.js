@@ -90,7 +90,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
     if (isNumber) {
       let values = data.map((function(d) { return +d[name]; }))
-      values = values.filter((function(d) { const isFalsy = !d; return !isFalsy; }));
+      values = values.filter((function(d) { return (d !== null && d !== undefined && d !== ""); }));
       yScales[name] = d3.scaleLinear()
         .domain(d3.extent(values))
         .range([cfg.h, 0])
