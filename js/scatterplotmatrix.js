@@ -2,8 +2,10 @@
 // Released under the ISC license.
 // https://observablehq.com/@d3/splom
 
-// Based on that example, but updated to handle any color scale and 
-// To not show abvious correlation on diagonal
+// Based on that example, but updated to:
+// - handle any color scale and 
+// - hide upper plots
+// - minimum height
 
 function ScatterplotMatrix(chartId, data, {
   columns = data.columns, // array of column names, or accessor functions
@@ -15,8 +17,9 @@ function ScatterplotMatrix(chartId, data, {
   marginRight = 20, // right margin, in pixels
   marginBottom = 30, // bottom margin, in pixels
   marginLeft = 40, // left margin, in pixels
+  maxCellSize = 200,
   width = 928, // outer width, in pixels
-  height = width, // outer height, in pixels
+  // height = width, // outer height, in pixels
   xType = d3.scaleLinear, // the x-scale type
   yType = d3.scaleLinear, // the y-scale type
   zDomain, // array of z-values
@@ -26,6 +29,7 @@ function ScatterplotMatrix(chartId, data, {
   onItemMouseOver = undefined,
   onItemMouseOut = undefined,
   buildItemTooltipHTML = undefined,
+  hideUpperPlots = true,
 } = {}) {
   // Compute values (and promote column names to accessors).
   const X = d3.map(x, x => d3.map(data, typeof x === "function" ? x : d => d[x]));
@@ -40,14 +44,19 @@ function ScatterplotMatrix(chartId, data, {
   const I = d3.range(Z.length).filter(i => zDomain.has(Z[i]));
 
   // Compute the inner dimensions of the cells.
-  const cellWidth = (width - marginLeft - marginRight - (X.length - 1) * padding) / X.length;
-  const cellHeight = (height - marginTop - marginBottom - (Y.length - 1) * padding) / Y.length;
+  let cellWidth = (width - marginLeft - marginRight - (X.length - 1) * padding) / X.length;
+  // let cellHeight = (height - marginTop - marginBottom - (Y.length - 1) * padding) / Y.length;
+
+  cellWidth = Math.min(maxCellSize, cellWidth);
+
+  cellHeight = cellWidth;
+
+  height = Y.length * cellHeight + (Y.length - 1) * padding + marginTop + marginBottom;
 
   // Construct scales and axes.
   const xScales = X.map(X => xType(d3.extent(X), [0, cellWidth]));
   const yScales = Y.map(Y => yType(d3.extent(Y), [cellHeight, 0]));
-  // const zScale = d3.scaleLinear(zDomain, colors);
-  const xAxis = d3.axisBottom().ticks(cellWidth / 50);
+  const xAxis = d3.axisBottom().ticks(cellWidth / 35);
   const yAxis = d3.axisLeft().ticks(cellHeight / 35);
 
   // Remove whatever chart with the same id/class was present before
@@ -60,35 +69,42 @@ function ScatterplotMatrix(chartId, data, {
     .attr("viewBox", [-marginLeft, -marginTop, width, height])
     .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
 
+  // x - strokes. TODO: respect bounds of the boxes
   svg.append("g")
     .selectAll("g")
     .data(yScales)
     .join("g")
       .attr("transform", (d, i) => `translate(0,${i * (cellHeight + padding)})`)
       .each(function(yScale) { return d3.select(this).call(yAxis.scale(yScale)); })
-      .call(g => g.select(".domain").remove())
-      .call(g => g.selectAll(".tick line").clone()
-          .attr("x2", width - marginLeft - marginRight)
-          .attr("stroke-opacity", 0.1));
+      // TODO: bring back lines
+      // .call(g => g.select(".domain").remove())
+      // .call(g => g.selectAll(".tick line").clone()
+      //     .attr("x2", width - marginLeft - marginRight)
+      //     .attr("stroke-opacity", 0.1));
 
+  // y - strokes. TODO: respect bounds of the boxes
   svg.append("g")
     .selectAll("g")
     .data(xScales)
     .join("g")
       .attr("transform", (d, i) => `translate(${i * (cellWidth + padding)},${height - marginBottom - marginTop})`)
       .each(function(xScale) { return d3.select(this).call(xAxis.scale(xScale)); })
-      .call(g => g.select(".domain").remove())
-      .call(g => g.selectAll(".tick line").clone()
-          .attr("y2", -height + marginTop + marginBottom)
-          .attr("stroke-opacity", 0.1))
+      // TODO: bring back lines
+      // .call(g => g.select(".domain").remove())
+      // .call(g => g.selectAll(".tick line").clone()
+      //     .attr("y2", -height + marginTop + marginBottom)
+      //     .attr("stroke-opacity", 0.1))
 
   const cell = svg.append("g")
     .selectAll("g")
     .data(d3.cross(d3.range(X.length), d3.range(Y.length)))
     .join("g")
+      .filter(([i, j]) => { return hideUpperPlots ? i <= j : true; })
       .attr("fill-opacity", fillOpacity)
       .attr("transform", ([i, j]) => `translate(${i * (cellWidth + padding)},${j * (cellHeight + padding)})`);
 
+
+  // Box around cell
   cell.append("rect")
       .attr("fill", "none")
       .attr("stroke", "currentColor")
@@ -162,7 +178,7 @@ function ScatterplotMatrix(chartId, data, {
   // Add labels for symmetric matrices
   // TODO Support labeling for asymmetric sploms?
   if (x === y) svg.append("g")
-      .attr("font-size", 15)
+      .attr("font-size", 18)
       .attr("font-family", "sans-serif")
       .attr("font-weight", "bold")
     .selectAll("text")
