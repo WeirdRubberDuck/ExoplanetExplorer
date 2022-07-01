@@ -32,7 +32,7 @@ function loadData() {
   const columnsToRemove = [
     'rastr', 'decstr', 'ed_ESM', 'sy_refname', 'pl_refname', 'st_refname',
     'dt_obj', 'pl_rprs2', 'tran_flag', 'soltype', 'disc_facility', 'gaia_id',
-    'pl_bmassprov', 'default_flag', 'ttv_flag', 'pl_radj', 'pl_bmassj',
+    'pl_bmassprov', 'default_flag', 'ttv_flag',
   ];
   const selectedData = data.map(item => {
     let newEntry = {};
@@ -60,23 +60,23 @@ function loadData() {
   //dataToShow = dataToShow.slice(0, 200);
 
   // Initialize column selection
-  let count = 0;
   for (const key in dataToShow[0]) {
     if (ColumnsToSkip.includes(key)) {
       continue;
     }
-    parallelColumnSelection[key] = key.startsWith("pl_"); // enable planet columns per default
+    parallelColumnSelection[key] = false;
     matrixColumnSelection[key] = false;
-    count++;
   }
-  // Default matrix columns
-  matrixColumnSelection.ESM = true;
-  matrixColumnSelection.TSM = true;
-  matrixColumnSelection.pl_Teq = true;
-  matrixColumnSelection.pl_rade = true;
 
-  // Some non-planet default PC columns
-  const pcDefaultColumns = ["sy_snum", "sy_pnum", "ESM", "TSM"]
+  // Default matrix columns
+  // matrixColumnSelection.ra = true;
+  // matrixColumnSelection.dec = true;
+
+  // Default parallel columns
+  const pcDefaultColumns = [
+    "discoverymethod", "sy_snum", "sy_pnum", "ESM", "TSM", "pl_bmasse", 
+    "pl_rade", "pl_orbincl", "pl_Teq"
+  ];
   pcDefaultColumns.forEach(col => {
     parallelColumnSelection[col] = true;
   })
@@ -405,17 +405,32 @@ function updateParallelCoordinates() {
     }
   }
 
+  let chartMargin = {
+    top: 50,
+    bottom: 50,
+    left: 80,
+    right: 80
+  };
+
+  // A little ugly, but we want to put the dicsoverymethod column first in the list
+  if (pcColumns.includes("discoverymethod")) {
+    const foundIdx = pcColumns.findIndex(e => e === "discoverymethod");
+    // Remove and add to beginning
+    pcColumns.splice(foundIdx, 1);
+    pcColumns.unshift("discoverymethod");
+    chartMargin.left = 140;
+  }
+
   const pcChartOptions = {
-    w: 900,
+    w: document.getElementById("all_charts").offsetWidth - chartMargin.left - chartMargin.right,
     h: 300,
-    // margin: margin,
+    margin: chartMargin,
     color: colorFunction,
     strokeWidth: 2,
     lineOpacity: LINE_OPACITY,
     onItemMouseOver: onLineMouseOver,
     onItemMouseOut: onLineMouseOut,
     buildItemTooltipHTML: buildItemTooltipHTML,
-    // showDistribution: true,
     brushCallback: onParallelBrush,
     columns: pcColumns,
   };

@@ -5,7 +5,7 @@
 let colorScale = undefined;
 let alwaysSetColorFromSelection = false;
 
-let colorColumn = "ESM";
+let colorColumn = "pl_bmasse";
 
 //////////////////////////////////////////////////////////////
 ///////////////// ColorMap control ///////////////////////////

@@ -24,7 +24,9 @@ body, html {
   float: left;
   border-collapse: collapse;
   box-sizing: border-box;
-  padding: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-top: 0.5em;
 }
 
 .rightpane {
