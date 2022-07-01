@@ -138,6 +138,14 @@ tr.highlighted {
   display: inline;
 }
 
+#scattermatrix_hint {
+  margin-top: 10em;
+}
+
+.hint {
+  color: lightgray;
+}
+
 /* Settings */
 #colormap_legend > svg {
   margin: auto;

@@ -454,6 +454,14 @@ function updateScatterPlotMatrix() {
     }
   }
 
+  if (matrixColumns.length === 0) {
+    document.getElementById("scatter_plot_matrix").innerHTML = 
+      "<p class='hint' id='scattermatrix_hint'><- Select some columns to the left to show scatter plot matrix here</p>";
+    return;
+  }
+  
+  document.getElementById("scatter_plot_matrix").innerHTML = "";
+
   ScatterplotMatrix("scatter_plot_matrix", dataToShow, {
     columns: matrixColumns,
     colors: colorFunction, // switch to use same kind of color function as PC
