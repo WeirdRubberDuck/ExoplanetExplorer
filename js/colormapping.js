@@ -45,6 +45,8 @@ function updateColorMapLegend(isNumeric) {
     });
   }
 
+  document.getElementById("colormap-axis-select").value = colorColumn;
+
   document.getElementById(`colormap-legend`).innerHTML = "";
   document.getElementById("colormap-legend").appendChild(legend);
 }
