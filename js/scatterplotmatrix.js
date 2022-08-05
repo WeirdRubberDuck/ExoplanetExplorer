@@ -59,6 +59,8 @@ function ScatterplotMatrix(chartId, data, {
   const xAxis = d3.axisBottom().ticks(cellWidth / 35);
   const yAxis = d3.axisLeft().ticks(cellHeight / 35);
 
+  console.log(yScales);
+
   // Remove whatever chart with the same id/class was present before
   d3.select(`#${chartId}`).select("svg").remove();
 
@@ -75,7 +77,12 @@ function ScatterplotMatrix(chartId, data, {
     .data(yScales)
     .join("g")
       .attr("transform", (d, i) => `translate(0,${i * (cellHeight + padding)})`)
-      .each(function(yScale) { return d3.select(this).call(yAxis.scale(yScale)); })
+      .each(function(yScale, i) { 
+        if (hideUpperPlots && i === 0) {
+          return ""; // Hide first axis
+        }
+        return d3.select(this).call(yAxis.scale(yScale)); 
+      })
       // TODO: bring back lines
       // .call(g => g.select(".domain").remove())
       // .call(g => g.selectAll(".tick line").clone()
@@ -88,7 +95,12 @@ function ScatterplotMatrix(chartId, data, {
     .data(xScales)
     .join("g")
       .attr("transform", (d, i) => `translate(${i * (cellWidth + padding)},${height - marginBottom - marginTop})`)
-      .each(function(xScale) { return d3.select(this).call(xAxis.scale(xScale)); })
+      .each(function(xScale, i) { 
+        if (hideUpperPlots && i === xScales.length - 1) {
+          return ""; // Hide last axis
+        }
+        return d3.select(this).call(xAxis.scale(xScale)); 
+      })
       // TODO: bring back lines
       // .call(g => g.select(".domain").remove())
       // .call(g => g.selectAll(".tick line").clone()
@@ -121,7 +133,8 @@ function ScatterplotMatrix(chartId, data, {
   cell.each(function([x, y]) {
     d3.select(this).selectAll(".backgroundCircle")
       .data(I.filter(i => {
-        return isValidPoint(i, x, y);
+        const inDiagonal = x === y;
+        return !inDiagonal && isValidPoint(i, x, y);
       }))
       .join("circle")
         .attr("class",  i => `backgroundCircle`)
@@ -135,7 +148,8 @@ function ScatterplotMatrix(chartId, data, {
   cell.each(function([x, y]) {
     d3.select(this).selectAll(".foregroundCircle")
       .data(I.filter(i => {
-        return !isFiltered(Z[i]) && isValidPoint(i, x, y);
+        const inDiagonal = x === y;
+        return !inDiagonal && !isFiltered(Z[i]) && isValidPoint(i, x, y);
       }))
       .join("circle")
         .attr("class", i => `foregroundCircle scatterPoint-${Z[i]} ${chartId}`)
@@ -186,9 +200,10 @@ function ScatterplotMatrix(chartId, data, {
     .join("text")
       .attr("class", "legend")
       .attr("transform", (d, i) => `translate(${i * (cellWidth + padding)},${i * (cellHeight + padding)})`)
-      .attr("x", padding / 2)
-      .attr("y", padding / 2)
-      .attr("dy", ".71em")
+      .attr("x", cellWidth / 2)
+      .attr("y", cellHeight / 2)
+      .style("text-anchor", "middle")
+      // .attr("dy", ".71em")
       .text(d => d);
 
   /////////////////////////////////////////////////////////
