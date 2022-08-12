@@ -396,9 +396,8 @@ function ParallelCoordinatesChart(chartId, data, options) {
       return (isActive) ? null : "none";
     });
 
-    // Call callback with selected ids. Selection == undefined if no active brushed
-    const hasActives = actives.length > 0;
-    cfg.brushCallback(hasActives ? selected.map(d => d.id) : undefined);
+    // Call callback with selected ids
+    cfg.brushCallback(selected.map(d => d.id));
   }
 
   /////////////////////////////////////////////////////////
