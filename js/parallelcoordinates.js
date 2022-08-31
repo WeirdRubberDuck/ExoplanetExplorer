@@ -20,9 +20,9 @@ function ParallelCoordinatesChart(chartId, data, options) {
     brushCallback: (selectedIds) => {}, // Function to call when brushing happens
     brushEndCallback: (selectedIds) => {}, // Function to call when brushing happens
     clearBrushesCallback: () => {},
-
     title: "",
-    columns: undefined
+    columns: undefined,
+    uncertaintyData  : undefined
   };
 
   // Put all of the options into a variable called cfg
@@ -36,8 +36,6 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
   let dimensions = cfg.columns ? cfg.columns : Object.keys(data[0]); // Names of each axis
 
-  let nAxes = dimensions.length; // The number of different axes
-
   /////////////////////////////////////////////////////////
   //////////// Create the container SVG and g /////////////
   /////////////////////////////////////////////////////////
@@ -45,11 +43,14 @@ function ParallelCoordinatesChart(chartId, data, options) {
   // Remove whatever chart with the same id/class was present before
   d3.select(`#${chartId}`).select("svg").remove();
 
+  // Some extra height to fit stuff beneath the chart
+  const extraHeight = 50;
+
   // Initiate the chart SVG
   var svg = d3.select(`#${chartId}`)
     .append("svg")
     .attr("width", cfg.w + cfg.margin.left + cfg.margin.right)
-    .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom)
+    .attr("height", cfg.h + cfg.margin.top + cfg.margin.bottom + extraHeight)
     .attr("class", "parallel_" + chartId)
     .attr("class", "parallel")
     .append("g")
@@ -120,7 +121,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
   /////////////////////////////////////////////////////////
   //////////////////// Draw the lines //////////////////////
   /////////////////////////////////////////////////////////
-  const nanAxisYPos = cfg.h + 0.12 * cfg.h;
+  const nanAxisYPos = 1.1 * cfg.h;
 
   function path(d) {
     return d3.line()(dimensions.map(
@@ -398,6 +399,79 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
     // Call callback with selected ids
     cfg.brushCallback(selected.map(d => d.id));
+  }
+
+  /////////////////////////////////////////////////////////
+  ////////////////// Separating line //////////////////////
+  /////////////////////////////////////////////////////////
+
+  // Draw a line and some text
+  const lineY = nanAxisYPos + 20;
+  const linexMarginRight = 30;
+  const linexMarginLeft = 0.8 * cfg.margin.left;
+  const textPositionX = 0 - 0.95 * linexMarginLeft;
+  const lineTextColor = "rgb(200, 200, 200)";
+
+  const line = d3.line()([
+    [0 - linexMarginLeft, lineY], 
+    [cfg.w + linexMarginRight, lineY]
+  ]);
+
+  svg.append("path")
+    .attr("class", `contextLine ${chartId}`)
+    .attr("d", line)
+    .style("fill", "none")
+    .style("stroke", "rgb(150, 150, 150)")
+    .style("stroke-width", "0.2px");
+
+  if (uncertaintyData) {
+    svg.append("g")
+      .append("text")
+      .attr("x", textPositionX)
+      .attr("y", lineY)
+      .attr("dy", "1em")
+      .text("uncertainty axis")
+      .style("fill", lineTextColor)
+      .style("font-style", "italic")
+      .style("font-size", "small");
+  }
+
+  svg.append("g")
+    .append("text")
+    .attr("x", textPositionX)
+    .attr("y", lineY)
+    .attr("dy", "-0.5em")
+    .text("missing values")
+    .style("fill", lineTextColor)
+    .style("font-style", "italic")
+    .style("font-size", "small");
+
+  /////////////////////////////////////////////////////////
+  //////// Checkboxes to show uncertainty axes ////////////
+  /////////////////////////////////////////////////////////
+
+  console.log(uncertaintyData)
+
+  if (uncertaintyData && uncertaintyData.length > 0) {
+    const checkboxSize = 12; 
+    axes.append("rect")
+      .filter((d, index) => { 
+        // Only show if ther eis uncertainty columns
+        return (`${d}err1` in uncertaintyData[0]) && (`${d}err2` in uncertaintyData[0]);
+      })
+      .attr("class", "uncertaintyCheckbox")
+      .attr("x", (d) => { xScale(d)})
+      .attr("transform", (d) => {
+        return "translate(" + -0.5*checkboxSize + ")";
+      })
+      .attr("y", lineY + checkboxSize/2)
+      .attr("rx", "2")
+      .attr("ry", "2" )
+      .attr("width", checkboxSize)
+      .attr("height", checkboxSize)
+      .attr("stroke", "darkgray")
+      .attr("stroke-width", "1px")
+      .attr("fill", "white")
   }
 
   /////////////////////////////////////////////////////////

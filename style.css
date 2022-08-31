@@ -203,6 +203,9 @@ tr.highlighted {
 /* Parallel coordinates */
 .nanBrush:hover {
   filter: brightness(120%);
-  stroke: white;
   r: 6; /* circle radius */
+}
+
+.uncertaintyCheckbox:hover {
+  filter: brightness(120%);
 }

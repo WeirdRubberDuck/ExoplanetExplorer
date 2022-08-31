@@ -2,7 +2,11 @@
 //////////////////////// Variables ///////////////////////////
 //////////////////////////////////////////////////////////////
 
+// Data structures for full dataset. Not that the ID of each planet corresponds 
+// to the index in these table
 let fullData = undefined;
+let uncertaintyData = undefined; // Just the uncertainty columns
+
 let sortAscending = false;
 let sortColumn = 1; // PlanetName
 
@@ -34,13 +38,16 @@ function loadData() {
     'dt_obj', 'pl_rprs2', 'tran_flag', 'soltype', 'disc_facility', 'gaia_id',
     'pl_bmassprov', 'default_flag', 'ttv_flag',
   ];
-  const selectedData = data.map(item => {
+
+  fullData = [];
+  uncertaintyData = [];
+
+  data.forEach(item => {
     let newEntry = {};
+    let uncertaintyEntry = {};
     for (const key in item) {
-      // Uncertainty and limits
-      if (key.endsWith("err1") || 
-          key.endsWith("err2") || 
-          key.endsWith("lim") || 
+      // Skip some columns completely
+      if (key.endsWith("lim") || 
           key.endsWith("apogee") || // for now, skip metallicity cols
           key.endsWith("galah") || // for now, skip metallicity cols
           key.startsWith("molecule") || // and molecule columns
@@ -48,16 +55,25 @@ function loadData() {
       {
         continue;
       }
+      // Handle uncertainty columns
+      if (key.endsWith("err1") || key.endsWith("err2")) {
+        uncertaintyEntry[key] = item[key];
+        continue;
+      }
       newEntry[key] = item[key];
     }
-    return newEntry;
+
+    // Append to global data variables
+    fullData.push(newEntry);
+    uncertaintyData.push(uncertaintyEntry)
   });
 
-  fullData = selectedData;
   dataToShow = fullData;
 
+  console.log(uncertaintyData);
+
   // For testing: reduce number of data points to max 200
-  //dataToShow = dataToShow.slice(0, 200);
+  dataToShow = dataToShow.slice(0, 200);
 
   // Initialize column selection
   for (const key in dataToShow[0]) {
@@ -433,6 +449,7 @@ function updateParallelCoordinates() {
     buildItemTooltipHTML: buildItemTooltipHTML,
     brushCallback: onParallelBrush,
     columns: pcColumns,
+    uncertaintyData: uncertaintyData
   };
   
   ParallelCoordinatesChart("parallel_coords", dataToShow, pcChartOptions);
