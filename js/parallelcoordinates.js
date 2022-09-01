@@ -22,7 +22,8 @@ function ParallelCoordinatesChart(chartId, data, options) {
     clearBrushesCallback: () => {},
     title: "",
     columns: undefined,
-    uncertaintyData: undefined
+    uncertaintyData: undefined,
+    showUncertaintyOnHover: true
   };
 
   // Put all of the options into a variable called cfg
@@ -133,15 +134,19 @@ function ParallelCoordinatesChart(chartId, data, options) {
   /////////////////////////////////////////////////////////
   const nanAxisYPos = 1.1 * cfg.h;
 
-  function path(d) {
-    return d3.line()(dimensions.map(
-      function(p) { 
-        if (d[p] === "" || d[p] === null) { // no value
-          return [xScale(p), nanAxisYPos];
-        }
-        return [xScale(p), yScales[p](d[p])];
-      })
-    );
+  function yPos(item, dim) {
+    const hasValue = !(item[dim] === "" || item[dim] === null);
+    return hasValue ? yScales[dim](item[dim]) : nanAxisYPos;
+  }
+
+  // OBS! Use only for numeric valeus
+  function yPosUncertainty(item, dim, uncertainty = 0) {
+    const hasValue = !(item[dim] === "" || item[dim] === null);
+    return hasValue ? yScales[dim](item[dim] + uncertainty) : nanAxisYPos;
+  }
+
+  function path(item) {
+    return d3.line()(dimensions.map(dim => [xScale(dim), yPos(item, dim)] ));
   }
 
   // Background lines for context
@@ -153,6 +158,51 @@ function ParallelCoordinatesChart(chartId, data, options) {
     .style("fill", "none")
     .style("stroke", "rgb(220, 220, 220)")
     .style("stroke-width", cfg.strokeWidth / 2 + "px");
+
+  function removeUncertaintyShape() {
+    d3.selectAll(".uncertaintyArea").remove();
+  }
+  function renderUncertaintyShape(d) {
+    if (cfg.uncertaintyData && cfg.showUncertaintyOnHover) {
+      function area(item) {
+        let points = [];
+        // Top points
+        dimensions.forEach(dim => {
+          let y = yPos(item, dim);
+          if (dimensionsWithUncertainty.includes(dim)) {
+            // Add positive uncertainty
+            const uncertainty = uncertaintyData[item.id][`${dim}err1`];
+            if (uncertainty !== null) {
+              y = yPosUncertainty(item, dim, uncertainty);
+            }
+          }
+          points.push([xScale(dim), y]);
+        })
+        // Bottom points
+        dimensions.slice().reverse().forEach(dim => {
+          let y = yPos(item, dim);
+          if (dimensionsWithUncertainty.includes(dim)) {
+            // Add negative uncertainty
+            const uncertainty = uncertaintyData[item.id][`${dim}err2`];
+            if (uncertainty !== null) {
+              y = yPosUncertainty(item, dim, uncertainty);
+            }
+          }
+          points.push([xScale(dim), y]);
+        });
+        return d3.line()(points);
+      }
+      
+      removeUncertaintyShape();
+      svg.selectAll(".uncertaintyArea")
+        .data([d])
+        .enter().append("path")
+        .attr("class", "uncertaintyArea")
+        .attr('fill', (d) => cfg.color(d.id))
+        .style("opacity", 0.5)
+        .attr('d', area);
+    }
+  }
 
   // Foreground lines (colored)
   let foreground = svg.selectAll(".myPath")
@@ -185,6 +235,8 @@ function ParallelCoordinatesChart(chartId, data, options) {
         .style("stroke-width", 1.5 * cfg.strokeWidth + "px")
         .style("opacity", 1.0);
 
+      renderUncertaintyShape(d);
+
       if (cfg.onItemMouseOver) {
         cfg.onItemMouseOver(d.id, chartId);
       }
@@ -199,6 +251,8 @@ function ParallelCoordinatesChart(chartId, data, options) {
         .duration(200)
         .style("stroke-width", cfg.strokeWidth + "px")
         .style("opacity", cfg.lineOpacity);
+
+      removeUncertaintyShape();
 
       if (cfg.onItemMouseOut) {
         cfg.onItemMouseOut(d.id, chartId);
