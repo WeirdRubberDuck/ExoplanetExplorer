@@ -22,7 +22,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
     clearBrushesCallback: () => {},
     title: "",
     columns: undefined,
-    uncertaintyData  : undefined
+    uncertaintyData: undefined
   };
 
   // Put all of the options into a variable called cfg
@@ -35,6 +35,16 @@ function ParallelCoordinatesChart(chartId, data, options) {
   } //if
 
   let dimensions = cfg.columns ? cfg.columns : Object.keys(data[0]); // Names of each axis
+
+  // Prepare uncertainty data for rendering
+  const dimensionsWithUncertainty = dimensions.filter(d => 
+    (`${d}err1` in uncertaintyData[0]) && (`${d}err2` in uncertaintyData[0])
+  );
+
+  // Initialize uncertainty data structure
+  let uncertaintySelection = {};
+  dimensionsWithUncertainty.forEach((d) => { uncertaintySelection[d] = false; });
+
 
   /////////////////////////////////////////////////////////
   //////////// Create the container SVG and g /////////////
@@ -450,17 +460,28 @@ function ParallelCoordinatesChart(chartId, data, options) {
   //////// Checkboxes to show uncertainty axes ////////////
   /////////////////////////////////////////////////////////
 
-  console.log(uncertaintyData)
+  const isSelected = (dim) => {
+    return uncertaintySelection[dim] === true;
+  };
 
   if (uncertaintyData && uncertaintyData.length > 0) {
+    renderCheckBoxes(); 
+  }
+
+  const onCheckBoxClick = (dim) => {
+    console.log(dim);
+    // Toggle uncertainty
+    uncertaintySelection[dim] = !uncertaintySelection[dim];
+    console.log(uncertaintySelection)
+    renderCheckBoxes();
+  };
+
+  function renderCheckBoxes() {
     const checkboxSize = 12; 
-    axes.append("rect")
-      .filter((d, index) => { 
-        // Only show if ther eis uncertainty columns
-        return (`${d}err1` in uncertaintyData[0]) && (`${d}err2` in uncertaintyData[0]);
-      })
+    let boxes = axes.append("rect")
+      .filter((d) => { return (dimensionsWithUncertainty.includes(d)); })
       .attr("class", "uncertaintyCheckbox")
-      .attr("x", (d) => { xScale(d)})
+      .attr("x", (d) => { xScale(d) })
       .attr("transform", (d) => {
         return "translate(" + -0.5*checkboxSize + ")";
       })
@@ -472,6 +493,36 @@ function ParallelCoordinatesChart(chartId, data, options) {
       .attr("stroke", "darkgray")
       .attr("stroke-width", "1px")
       .attr("fill", "white")
+      .on("click", (event, d) => onCheckBoxClick(d))
+
+      boxes
+        .filter((d) => { return isSelected(d); })
+        .attr("fill", "rgb(0, 115, 255)")
+        .attr("stroke", "none")
+
+      const checkmarkPath = () => {
+        const y = lineY + checkboxSize/2;
+        return d3.line()([
+          [0.2 * checkboxSize, y + 0.5 * checkboxSize], 
+          [0.4 * checkboxSize, y + 0.69 * checkboxSize],
+          [0.8 * checkboxSize, y + 0.2 * checkboxSize],
+        ]);
+      }
+
+      // Checkmark (always rendered, but not visible with white background)
+      axes.append("path")
+        .filter((d, index) => { 
+          // Only show if there is uncertainty columns
+          return (`${d}err1` in uncertaintyData[0]) && (`${d}err2` in uncertaintyData[0]);
+        })
+        .attr("class", `uncertaintyCheckbox`)
+        .attr("d", (d) => checkmarkPath())
+        .attr("transform", (d) => {
+          return "translate(" + -0.5*checkboxSize + ")";
+        })
+        .style("fill", "none")
+        .style("stroke", "white")
+        .style("stroke-width", "2px");
   }
 
   /////////////////////////////////////////////////////////
