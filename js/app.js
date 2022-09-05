@@ -21,6 +21,9 @@ const LINE_OPACITY = 0.5;
 let brushSelection = undefined;
 let activeItemId = undefined; // id of highlighted item
 
+// Handles to plots
+let parallelCoordsHandle = undefined;
+
 //////////////////////////////////////////////////////////////
 ////////////////////  Read data   ////////////////////////////
 //////////////////////////////////////////////////////////////
@@ -304,22 +307,13 @@ function setScatterPointHighlight(id, isHighlighted) {
   }
 }
 
-function setLineHighlight(id, isHighlighted) {
-  // Fade out or show the other points
-  const othersOpacity = isHighlighted ? 0.0 : LINE_OPACITY;
-  const lines = document.querySelectorAll(`.parallelLine:not(#line-${id})`);
-  if (lines && lines.length > 0) {
-    lines.forEach(p => { p.style.opacity = othersOpacity; });
-  }
-}
-
 function onTableRowMouseOver(id) {
   if (activeItemId !== undefined && activeItemId === id) {
     return; // Already set => do nothing
   }
   activeItemId = id;
 
-  setLineHighlight(id, true);
+  parallelCoordsHandle.onLineMouseover(data[id]);
   setScatterPointHighlight(id, true);
 }
 
@@ -329,7 +323,7 @@ function onTableRowMouseOut(id) {
   }
   activeItemId = undefined;
 
-  setLineHighlight(id, false);
+  parallelCoordsHandle.onLineMouseout();
   setScatterPointHighlight(id, false);
 }
 
@@ -379,6 +373,7 @@ function onLineMouseOut(id, chartId) {
     return; // Already reset => do nothing
   }
   activeItemId = undefined;
+
   clearHighlightedTableRows();
   setScatterPointHighlight(id, false);
 }
@@ -390,7 +385,7 @@ function onPointMouseOver(id, chartId) {
   activeItemId = id;
 
   highlightTableRow(id);
-  setLineHighlight(id, true);
+  parallelCoordsHandle.onLineMouseover(data[id]);
 }
 
 function onPointMouseOut(id, chartId) {
@@ -398,8 +393,9 @@ function onPointMouseOut(id, chartId) {
     return; // Already reset => do nothing
   }
   activeItemId = undefined;
+  
   clearHighlightedTableRows();
-  setLineHighlight(id, false);
+  parallelCoordsHandle.onLineMouseout();
 }
 
 
@@ -408,7 +404,7 @@ function onPointMouseOut(id, chartId) {
 //////////////////////////////////////////////////////////////
 
 function updateChartColorMapping() {
-  updateParallelLineColors("parallel_coords", colorFunction);
+  parallelCoordsHandle.updateParallelLineColors("parallel_coords", colorFunction);
   // For now, update the entire scatterplot chart. Later we should just set the color correctly
   updateScatterPlotMatrix();
 }
@@ -452,7 +448,8 @@ function updateParallelCoordinates() {
     uncertaintyData: uncertaintyData
   };
   
-  ParallelCoordinatesChart("parallel_coords", dataToShow, pcChartOptions);
+  parallelCoordsHandle = new ParallelCoordinatesChart("parallel_coords", dataToShow, pcChartOptions);
+  parallelCoordsHandle.render();
 
   // Add double click listener to axis headers
   d3.select("#parallel_coords").selectAll(".legend")
