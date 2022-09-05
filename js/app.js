@@ -76,7 +76,7 @@ function loadData() {
   console.log(uncertaintyData);
 
   // For testing: reduce number of data points to max 200
-  dataToShow = dataToShow.slice(0, 200);
+  // dataToShow = dataToShow.slice(0, 200);
 
   // Initialize column selection
   for (const key in dataToShow[0]) {
@@ -393,7 +393,7 @@ function onPointMouseOut(id, chartId) {
     return; // Already reset => do nothing
   }
   activeItemId = undefined;
-  
+
   clearHighlightedTableRows();
   parallelCoordsHandle.onLineMouseout();
 }
