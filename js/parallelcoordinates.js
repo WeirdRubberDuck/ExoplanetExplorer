@@ -209,19 +209,20 @@ function ParallelCoordinatesChart(chartId, data, options) {
       .style("stroke-width", cfg.strokeWidth + "px")
       .on('mouseover', function (ev, d) {
         element.onLineMouseover(d, chartId);
+        element.tooltip_mousemove(ev, d.id);
         if (cfg.onItemMouseOver) {
           cfg.onItemMouseOver(d.id, chartId);
         }
       })
       .on("mousemove", function(ev, d) {
-        tooltip_mousemove(ev, d.id);
+        element.tooltip_mousemove(ev, d.id);
       })
       .on('mouseout', function(ev, d) {
         element.onLineMouseout(chartId)
         if (cfg.onItemMouseOut) {
           cfg.onItemMouseOut(d.id, chartId);
         }
-        tooltip_mouseleave(ev, d.id);
+        element.tooltip_mouseleave(ev, d.id);
       });
 
     /////////////////////////////////////////////////////////
@@ -611,7 +612,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
       .style("position","absolute");
 
     // Three function that change the tooltip when user move / leave a blob
-    function tooltip_mousemove(event, id) {
+    element.tooltip_mousemove = function(event, id) {
       tooltip.style("opacity", 1)
 
       let content = "no content";
@@ -623,7 +624,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
         .style("left", (event.pageX+20) + "px")
         .style("top", (event.pageY) + "px")
     }
-    function tooltip_mouseleave(event, id) {
+    element.tooltip_mouseleave = function(event, id) {
       tooltip
         .style("opacity", 0)
         // Also move tooltip out of the way
@@ -638,7 +639,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
   }
 
   element.onLineMouseover = function(d) {
-    let fadeOpacity = 0.01;
+    let fadeOpacity = 0.001;
   
     // Dim all but the current line
     d3.selectAll(`.parallelLine.${chartId}`)
@@ -659,8 +660,6 @@ function ParallelCoordinatesChart(chartId, data, options) {
   }
 
   element.onLineMouseout = function() {
-    console.log(chartId);
-
     // Reset changes
     d3.selectAll(`.parallelLine.${chartId}`)
       .transition()
