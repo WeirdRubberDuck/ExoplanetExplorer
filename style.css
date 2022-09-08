@@ -192,12 +192,18 @@ tr.highlighted {
   content: "\2212";
 }
 
-.collapsible-content  {
+.collapsible-content {
   padding: 0 18px;
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.2s ease-out;
   background-color: #f1f1f1;
+}
+
+.description {
+  font-size: small;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 #column-selection {

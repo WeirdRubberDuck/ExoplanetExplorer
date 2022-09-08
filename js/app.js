@@ -27,6 +27,10 @@ let parallelCoordsHandle = undefined;
 //////////////////////////////////////////////////////////////
 ////////////////////  Read data   ////////////////////////////
 //////////////////////////////////////////////////////////////
+function isNotNullNorUndefined(o) {
+  return (typeof (o) !== 'undefined' && o !== null);
+};
+
 function loadData() {
   // Note that the data variable was created in the data preparation step and 
   // is available in a separate js file
@@ -84,7 +88,12 @@ function loadData() {
       continue;
     }
     parallelColumnSelection[key] = false;
-    matrixColumnSelection[key] = false;
+
+    // Find the first value in the data that exists and check if it is a number or nor
+    const item = fullData.find((o) => isNotNullNorUndefined(o[key]));
+    if (item && !isNaN(item[key])) {
+      matrixColumnSelection[key] = false;
+    }
   }
 
   // Default matrix columns
@@ -246,7 +255,7 @@ function drawMetaDataTable() {
       .style("fill", safeColor(planetRadius))
       .attr("r", rScale(planetRadius))
       .attr("cx", size)
-      .attr("cy", size);  
+      .attr("cy", size);
   }
 
   let body = table.append("tbody");
