@@ -150,49 +150,52 @@ function ParallelCoordinatesChart(chartId, data, options) {
       .style("stroke-width", cfg.strokeWidth / 2 + "px");
 
     element.removeUncertaintyShape = function() {
-      d3.selectAll(".uncertaintyArea").remove();
-    }
-
+      d3.selectAll(`.uncertaintyArea`).attr("visibility", "hidden");
+    };
     element.renderUncertaintyShape = function(d) {
-      if (cfg.uncertaintyData && cfg.showUncertaintyOnHover) {
-        function area(item) {
-          let points = [];
-          // Top points
-          dimensions.forEach(dim => {
-            let y = yPos(item, dim);
-            if (dimensionsWithUncertainty.includes(dim)) {
-              // Add positive uncertainty
-              const uncertainty = uncertaintyData[item.id][`${dim}err1`];
-              if (uncertainty !== null) {
-                y = yPosUncertainty(item, dim, uncertainty);
-              }
+      d3.select(`#area-${d.id}`).attr("visibility", "visible");
+    };
+
+    // Uncertainty area: render for all and show when hovered
+    if (cfg.uncertaintyData && cfg.showUncertaintyOnHover) {
+      function area(item) {
+        let points = [];
+        // Top points
+        dimensions.forEach(dim => {
+          let y = yPos(item, dim);
+          if (dimensionsWithUncertainty.includes(dim)) {
+            // Add positive uncertainty
+            const uncertainty = uncertaintyData[item.id][`${dim}err1`];
+            if (uncertainty !== null) {
+              y = yPosUncertainty(item, dim, uncertainty);
             }
-            points.push([xScale(dim), y]);
-          })
-          // Bottom points
-          dimensions.slice().reverse().forEach(dim => {
-            let y = yPos(item, dim);
-            if (dimensionsWithUncertainty.includes(dim)) {
-              // Add negative uncertainty
-              const uncertainty = uncertaintyData[item.id][`${dim}err2`];
-              if (uncertainty !== null) {
-                y = yPosUncertainty(item, dim, uncertainty);
-              }
+          }
+          points.push([xScale(dim), y]);
+        })
+        // Bottom points
+        dimensions.slice().reverse().forEach(dim => {
+          let y = yPos(item, dim);
+          if (dimensionsWithUncertainty.includes(dim)) {
+            // Add negative uncertainty
+            const uncertainty = uncertaintyData[item.id][`${dim}err2`];
+            if (uncertainty !== null) {
+              y = yPosUncertainty(item, dim, uncertainty);
             }
-            points.push([xScale(dim), y]);
-          });
-          return d3.line()(points);
-        }
-        
-        element.removeUncertaintyShape();
-        svg.selectAll(".uncertaintyArea")
-          .data([d])
-          .enter().append("path")
-          .attr("class", "uncertaintyArea")
-          .attr('fill', (d) => cfg.color(d.id))
-          .style("opacity", 0.5)
-          .attr('d', area);
+          }
+          points.push([xScale(dim), y]);
+        });
+        return d3.line()(points);
       }
+
+      svg.selectAll(".uncertaintyArea")
+        .data(data)
+        .enter().append("path")
+        .attr("class", "uncertaintyArea")
+        .attr("id", (d) => `area-${d.id}`)
+        .attr('fill', (d) => cfg.color(d.id))
+        .style("opacity", 0.5)
+        .attr("visibility", "hidden")
+        .attr('d', area);
     }
 
     // Foreground lines (colored)
