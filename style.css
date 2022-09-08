@@ -226,3 +226,11 @@ tr.highlighted {
 .uncertaintyCheckbox:hover {
   filter: brightness(120%);
 }
+
+.axis.error {
+  color: rgb(185, 185, 185);
+}
+
+.axis.error > .legend {
+  fill: rgb(185, 185, 185);
+}

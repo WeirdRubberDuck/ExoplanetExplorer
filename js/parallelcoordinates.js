@@ -38,16 +38,55 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
   let dimensions = cfg.columns ? cfg.columns : Object.keys(data[0]); // Names of each axis
 
+  let uncertaintySelection = {};
+
   // Prepare uncertainty data for rendering
   const dimensionsWithUncertainty = dimensions.filter(d => 
     (`${d}err1` in uncertaintyData[0]) && (`${d}err2` in uncertaintyData[0])
   );
 
   // Initialize uncertainty data structure
-  let uncertaintySelection = {};
   dimensionsWithUncertainty.forEach((d) => { uncertaintySelection[d] = false; });
 
+  let errorDimName = (dim) => `${dim}_err`;
+
+  let allDimensions = dimensions;
+
+  // Include percentual error data in the data
+  for (const dim of dimensionsWithUncertainty) {
+    for (const row in data) {
+      // Cmpute error percentage (row in data matches uncertaintyData)
+      const upper = uncertaintyData[row][`${dim}err1`];
+      const lower = uncertaintyData[row][`${dim}err2`]
+      const val = data[row][dim];
+      const hasValue = (val !== "" && val !== null);
+
+      let result = null;
+      if (hasValue && !(isNaN(upper) || isNaN(lower) || isNaN(val))) {
+        // Compute full error in percentage
+        result = 100.0 * (Math.abs(upper) + Math.abs(lower)) / val;
+      }
+      data[row][errorDimName(dim)] = result;
+    }
+
+    // Add dimensions to the list of all dimensions
+    const index = allDimensions.findIndex(d => d === dim);
+    if (index !== -1) {
+      allDimensions.splice(index + 1, 0, errorDimName(dim));
+    }
+  }
+
   element.render = function() {
+    // Only include error dimensions that have been selected
+    dimensions = allDimensions.filter(dim => {
+      if (!dim.endsWith("_err")) {
+        return true;
+      }
+      const axis = dim.slice(0, -4);
+      const selected = uncertaintySelection[axis];
+      return (selected === undefined) || (selected === true)
+    });
+
     /////////////////////////////////////////////////////////
     //////////// Create the container SVG and g /////////////
     /////////////////////////////////////////////////////////
@@ -257,7 +296,9 @@ function ParallelCoordinatesChart(chartId, data, options) {
     
     // Build the axis and title
     axes.append("g")
-      .attr("class", "axis")
+      .attr("class", (d) => {
+        return d.endsWith("_err") ? "axis error" : "axis";
+      })
       .each(function(d) { d3.select(this).call(d3.axisLeft().scale(yScales[d])); })
       .append("text")
       .attr("class", "legend")
@@ -505,11 +546,12 @@ function ParallelCoordinatesChart(chartId, data, options) {
     }
 
     const onCheckBoxClick = (dim) => {
-      console.log(dim);
       // Toggle uncertainty
       uncertaintySelection[dim] = !uncertaintySelection[dim];
-      console.log(uncertaintySelection)
       renderCheckBoxes();
+      
+      // Rerender
+      element.render();
     };
 
     function renderCheckBoxes() {
@@ -695,7 +737,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
     if (element.inTransition) {
       return;
     }
-    
+
     // Reset changes
     d3.selectAll(`.parallelLine.${chartId}`)
       .transition()
