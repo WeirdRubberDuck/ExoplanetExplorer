@@ -156,38 +156,40 @@ function ParallelCoordinatesChart(chartId, data, options) {
       d3.select(`#area-${d.id}`).attr("visibility", "visible");
     };
 
+    function area(item) {
+      let points = [];
+      // Top points
+      dimensions.forEach(dim => {
+        let y = yPos(item, dim);
+        if (dimensionsWithUncertainty.includes(dim)) {
+          // Add positive uncertainty
+          const uncertainty = uncertaintyData[item.id][`${dim}err1`];
+          if (uncertainty !== null) {
+            y = yPosUncertainty(item, dim, uncertainty);
+          }
+        }
+        points.push([xScale(dim), y]);
+      })
+      // Bottom points
+      dimensions.slice().reverse().forEach(dim => {
+        let y = yPos(item, dim);
+        if (dimensionsWithUncertainty.includes(dim)) {
+          // Add negative uncertainty
+          const uncertainty = uncertaintyData[item.id][`${dim}err2`];
+          if (uncertainty !== null) {
+            y = yPosUncertainty(item, dim, uncertainty);
+          }
+        }
+        points.push([xScale(dim), y]);
+      });
+      return d3.line()(points);
+    }
+
+    let uncertaintyAreas = undefined;
+
     // Uncertainty area: render for all and show when hovered
     if (cfg.uncertaintyData && cfg.showUncertaintyOnHover) {
-      function area(item) {
-        let points = [];
-        // Top points
-        dimensions.forEach(dim => {
-          let y = yPos(item, dim);
-          if (dimensionsWithUncertainty.includes(dim)) {
-            // Add positive uncertainty
-            const uncertainty = uncertaintyData[item.id][`${dim}err1`];
-            if (uncertainty !== null) {
-              y = yPosUncertainty(item, dim, uncertainty);
-            }
-          }
-          points.push([xScale(dim), y]);
-        })
-        // Bottom points
-        dimensions.slice().reverse().forEach(dim => {
-          let y = yPos(item, dim);
-          if (dimensionsWithUncertainty.includes(dim)) {
-            // Add negative uncertainty
-            const uncertainty = uncertaintyData[item.id][`${dim}err2`];
-            if (uncertainty !== null) {
-              y = yPosUncertainty(item, dim, uncertainty);
-            }
-          }
-          points.push([xScale(dim), y]);
-        });
-        return d3.line()(points);
-      }
-
-      svg.selectAll(".uncertaintyArea")
+      uncertaintyAreas = svg.selectAll(".uncertaintyArea")
         .data(data)
         .enter().append("path")
         .attr("class", "uncertaintyArea")
@@ -562,7 +564,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
     // Transition used ot move an axis to its correct position
     function transition(g) {
-      return g.transition().duration(500);
+      return g.transition().delay(100).duration(500);
     }
 
     function dragStarted(event, d) {
@@ -573,32 +575,37 @@ function ParallelCoordinatesChart(chartId, data, options) {
     }
 
     function dragged(event, d) {
-      if (!dragging[d]) return;
+      if (dragging[d] === undefined) return;
       dragging[d] = Math.min(cfg.w + 10, Math.max(-10, event.x));
       dimensions.sort(function(a, b) { return position(a) - position(b); });
       xScale.domain(dimensions);
       axes.attr("transform", (d) => {
         return "translate(" + position(d) + ")";
-      });  
+      });
     }
 
     function dragEnded(event, d) {
-      if (!dragging[d]) return;
+      if (dragging[d] === undefined) return;
       delete dragging[d];
+
       transition(d3.select(this)).attr("transform", "translate(" + xScale(d) + ")");
       transition(foreground).attr("d", path);
+      if (uncertaintyAreas !== undefined) {
+        transition(uncertaintyAreas).attr("d", area);
+      }
+
       background
           .attr("d", path)
         .transition()
           .delay(500)
           .duration(0)
-          .attr("visibility", null);
+          .attr("visibility", "visible");
     }
 
     const drag = d3.drag()
-      .on("start", dragStarted) 
-      .on("drag", dragged) 
-      .on("end", dragEnded) 
+      .on("start", dragStarted)
+      .on("drag", dragged)
+      .on("end", dragEnded)
 
     axes.call(drag)
     axes.selectAll(".legend")
