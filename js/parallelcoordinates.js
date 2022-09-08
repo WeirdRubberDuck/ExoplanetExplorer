@@ -213,6 +213,10 @@ function ParallelCoordinatesChart(chartId, data, options) {
       .style("opacity", cfg.lineOpacity)
       .style("stroke-width", cfg.strokeWidth + "px")
       .on('mouseover', function (ev, d) {
+        // Prevent from triggering during a visual transition
+        if (element.inTransition) {
+          return;
+        }
         element.onLineMouseover(d, chartId);
         element.tooltip_mousemove(ev, d.id);
         if (cfg.onItemMouseOver) {
@@ -220,9 +224,17 @@ function ParallelCoordinatesChart(chartId, data, options) {
         }
       })
       .on("mousemove", function(ev, d) {
+        // Prevent from triggering during a visual transition
+        if (element.inTransition) {
+          return;
+        }
         element.tooltip_mousemove(ev, d.id);
       })
       .on('mouseout', function(ev, d) {
+        // Prevent from triggering during a visual transition
+        if (element.inTransition) {
+          return;
+        }
         element.onLineMouseout(chartId)
         if (cfg.onItemMouseOut) {
           cfg.onItemMouseOut(d.id, chartId);
@@ -555,6 +567,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
     // Implemented based on example: https://bl.ocks.org/jasondavies/1341281
 
     let dragging = {};
+    element.inTransition = false;
 
     // Poisiton of a dimension (axis)
     function position(d) {
@@ -572,6 +585,8 @@ function ParallelCoordinatesChart(chartId, data, options) {
       if (event.y > 0) return;
       dragging[d] = xScale(d);
       background.attr("visibility", "hidden");
+
+      element.inTransition = true;
     }
 
     function dragged(event, d) {
@@ -594,12 +609,14 @@ function ParallelCoordinatesChart(chartId, data, options) {
         transition(uncertaintyAreas).attr("d", area);
       }
 
+      // Background after everything else
       background
           .attr("d", path)
         .transition()
           .delay(500)
           .duration(0)
-          .attr("visibility", "visible");
+          .attr("visibility", "visible")
+          .on("end", (d) => { element.inTransition = false; });
     }
 
     const drag = d3.drag()
@@ -649,6 +666,10 @@ function ParallelCoordinatesChart(chartId, data, options) {
   }
 
   element.onLineMouseover = function(d) {
+    // Prevent from triggering during a visual transition
+    if (element.inTransition) {
+      return;
+    }
     let fadeOpacity = 0.001;
   
     // Dim all but the current line
@@ -670,6 +691,11 @@ function ParallelCoordinatesChart(chartId, data, options) {
   }
 
   element.onLineMouseout = function() {
+    // Prevent from triggering during a visual transition
+    if (element.inTransition) {
+      return;
+    }
+    
     // Reset changes
     d3.selectAll(`.parallelLine.${chartId}`)
       .transition()
