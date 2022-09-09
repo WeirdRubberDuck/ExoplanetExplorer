@@ -59,8 +59,6 @@ function ScatterplotMatrix(chartId, data, {
   const xAxis = d3.axisTop().ticks(cellWidth / 35);
   const yAxis = d3.axisRight().ticks(cellHeight / 35);
 
-  console.log(yScales);
-
   // Remove whatever chart with the same id/class was present before
   d3.select(`#${chartId}`).select("svg").remove();
 
@@ -111,7 +109,7 @@ function ScatterplotMatrix(chartId, data, {
     .selectAll("g")
     .data(d3.cross(d3.range(X.length), d3.range(Y.length)))
     .join("g")
-      .filter(([i, j]) => { return hideLowerPlots ? i >= j : true; }) // TODO: revive
+      .filter(([i, j]) => { return hideLowerPlots ? i >= j : true; })
       .attr("fill-opacity", fillOpacity)
       .attr("transform", ([i, j]) => `translate(${i * (cellWidth + padding)},${j * (cellHeight + padding)})`);
 
