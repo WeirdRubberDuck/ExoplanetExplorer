@@ -13,10 +13,10 @@ function ScatterplotMatrix(chartId, data, {
   y = columns, // array of y-accessors
   z = () => 1, // given d in data, returns the (categorical) z-value  // OBS! Changed to be the ID of the points
   padding = 20, // separation between adjacent cells, in pixels
-  marginTop = 10, // top margin, in pixels
-  marginRight = 20, // right margin, in pixels
+  marginTop = 50, // top margin, in pixels
+  marginRight = 50, // right margin, in pixels
   marginBottom = 30, // bottom margin, in pixels
-  marginLeft = 40, // left margin, in pixels
+  marginLeft = 50, // left margin, in pixels
   maxCellSize = 200,
   width = 928, // outer width, in pixels
   // height = width, // outer height, in pixels
@@ -29,7 +29,7 @@ function ScatterplotMatrix(chartId, data, {
   onItemMouseOver = undefined,
   onItemMouseOut = undefined,
   buildItemTooltipHTML = undefined,
-  hideUpperPlots = true,
+  hideLowerPlots = true,
 } = {}) {
   // Compute values (and promote column names to accessors).
   const X = d3.map(x, x => d3.map(data, typeof x === "function" ? x : d => d[x]));
@@ -46,18 +46,18 @@ function ScatterplotMatrix(chartId, data, {
   // Compute the inner dimensions of the cells.
   let cellWidth = (width - marginLeft - marginRight - (X.length - 1) * padding) / X.length;
   // let cellHeight = (height - marginTop - marginBottom - (Y.length - 1) * padding) / Y.length;
-
   cellWidth = Math.min(maxCellSize, cellWidth);
-
   cellHeight = cellWidth;
+
+  const allCellsWidth = (cellWidth + padding) * X.length - padding;
 
   height = Y.length * cellHeight + (Y.length - 1) * padding + marginTop + marginBottom;
 
   // Construct scales and axes.
   const xScales = X.map(X => xType(d3.extent(X), [0, cellWidth]));
   const yScales = Y.map(Y => yType(d3.extent(Y), [cellHeight, 0]));
-  const xAxis = d3.axisBottom().ticks(cellWidth / 35);
-  const yAxis = d3.axisLeft().ticks(cellHeight / 35);
+  const xAxis = d3.axisTop().ticks(cellWidth / 35);
+  const yAxis = d3.axisRight().ticks(cellHeight / 35);
 
   console.log(yScales);
 
@@ -74,14 +74,14 @@ function ScatterplotMatrix(chartId, data, {
   // x - strokes. TODO: respect bounds of the boxes
   svg.append("g")
     .selectAll("g")
-    .data(yScales)
+    .data(xScales)
     .join("g")
-      .attr("transform", (d, i) => `translate(0,${i * (cellHeight + padding)})`)
-      .each(function(yScale, i) { 
-        if (hideUpperPlots && i === 0) {
+      .attr("transform", (d, i) => `translate(${i * (cellWidth + padding)},0)`)
+      .each(function(xScale, i) { 
+        if (hideLowerPlots && i === 0) {
           return ""; // Hide first axis
         }
-        return d3.select(this).call(yAxis.scale(yScale)); 
+        return d3.select(this).call(xAxis.scale(xScale)); 
       })
       // TODO: bring back lines
       // .call(g => g.select(".domain").remove())
@@ -92,14 +92,14 @@ function ScatterplotMatrix(chartId, data, {
   // y - strokes. TODO: respect bounds of the boxes
   svg.append("g")
     .selectAll("g")
-    .data(xScales)
+    .data(yScales)
     .join("g")
-      .attr("transform", (d, i) => `translate(${i * (cellWidth + padding)},${height - marginBottom - marginTop})`)
-      .each(function(xScale, i) { 
-        if (hideUpperPlots && i === xScales.length - 1) {
+      .attr("transform", (d, i) => `translate(${allCellsWidth},${i * (cellHeight + padding)})`)
+      .each(function(yScale, i) { 
+        if (hideLowerPlots && i === yScales.length - 1) {
           return ""; // Hide last axis
         }
-        return d3.select(this).call(xAxis.scale(xScale)); 
+        return d3.select(this).call(yAxis.scale(yScale)); 
       })
       // TODO: bring back lines
       // .call(g => g.select(".domain").remove())
@@ -111,10 +111,9 @@ function ScatterplotMatrix(chartId, data, {
     .selectAll("g")
     .data(d3.cross(d3.range(X.length), d3.range(Y.length)))
     .join("g")
-      .filter(([i, j]) => { return hideUpperPlots ? i <= j : true; })
+      .filter(([i, j]) => { return hideLowerPlots ? i >= j : true; }) // TODO: revive
       .attr("fill-opacity", fillOpacity)
       .attr("transform", ([i, j]) => `translate(${i * (cellWidth + padding)},${j * (cellHeight + padding)})`);
-
 
   // Box around cell
   cell.append("rect")
