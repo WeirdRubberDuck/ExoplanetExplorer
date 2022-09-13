@@ -64,7 +64,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
       let result = null;
       if (hasValue && !(isNaN(upper) || isNaN(lower) || isNaN(val))) {
         // Compute full error in percentage
-        result = 100.0 * (Math.abs(upper) + Math.abs(lower)) / val;
+        result = 100.0 * (Math.abs(upper) + Math.abs(lower)) / Math.abs(val);
       }
       data[row][errorDimName(dim)] = result;
     }
