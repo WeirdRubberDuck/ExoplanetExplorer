@@ -56,9 +56,10 @@ function ParallelCoordinatesChart(chartId, data, options) {
   for (const dim of dimensionsWithUncertainty) {
     for (const row in data) {
       // Cmpute error percentage (row in data matches uncertaintyData)
-      const upper = uncertaintyData[row][`${dim}err1`];
-      const lower = uncertaintyData[row][`${dim}err2`]
-      const val = data[row][dim];
+      const planet = data[row];
+      const upper = uncertaintyData[planet.id][`${dim}err1`];
+      const lower = uncertaintyData[planet.id][`${dim}err2`];
+      const val = planet[dim];
       const hasValue = (val !== "" && val !== null);
 
       let result = null;
