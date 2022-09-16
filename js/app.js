@@ -463,7 +463,7 @@ function updateParallelCoordinates() {
   // Add double click listener to axis headers
   d3.select("#parallel_coords").selectAll(".legend")
     .on("dblclick", (event, d) => {
-      colorColumn = d; 
+      colorColumn = d;
       updateColorMap();
       updateChartColorMapping();
     })

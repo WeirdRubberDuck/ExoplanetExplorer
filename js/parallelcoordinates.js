@@ -60,10 +60,9 @@ function ParallelCoordinatesChart(chartId, data, options) {
       const upper = uncertaintyData[planet.id][`${dim}err1`];
       const lower = uncertaintyData[planet.id][`${dim}err2`];
       const val = planet[dim];
-      const hasValue = (val !== "" && val !== null);
 
       let result = null;
-      if (hasValue && !(isNaN(upper) || isNaN(lower) || isNaN(val))) {
+      if (hasValue(val) && !(isNaN(upper) || isNaN(lower) || isNaN(val))) {
         // Compute full error in percentage
         result = 100.0 * (Math.abs(upper) + Math.abs(lower)) / Math.abs(val);
       }
@@ -123,7 +122,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
       let isNumber = false;
       for (const row in data) {
         const value = data[row][name];
-        if (value !== "" || value !== null) {
+        if (hasValue(value)) {
           // Found a value, test what it is
           isNumber = !isNaN(value);
           break;
@@ -132,7 +131,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
       if (isNumber) {
         let values = data.map((function(d) { return +d[name]; }))
-        values = values.filter((function(d) { return (d !== null && d !== undefined && d !== ""); }));
+        values = values.filter((function(d) { return (hasValue(d)); }));
         yScales[name] = d3.scaleLinear()
           .domain(d3.extent(values))
           .range([cfg.h, 0])
@@ -165,14 +164,12 @@ function ParallelCoordinatesChart(chartId, data, options) {
     const nanAxisYPos = 1.1 * cfg.h;
 
     function yPos(item, dim) {
-      const hasValue = !(item[dim] === "" || item[dim] === null);
-      return hasValue ? yScales[dim](item[dim]) : nanAxisYPos;
+      return hasValue(item[dim]) ? yScales[dim](item[dim]) : nanAxisYPos;
     }
 
     // OBS! Use only for numeric valeus
     function yPosUncertainty(item, dim, uncertainty = 0) {
-      const hasValue = !(item[dim] === "" || item[dim] === null);
-      return hasValue ? yScales[dim](item[dim] + uncertainty) : nanAxisYPos;
+      return hasValue(item[dim]) ? yScales[dim](item[dim] + uncertainty) : nanAxisYPos;
     }
 
     function path(item) {
@@ -204,7 +201,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
         if (dimensionsWithUncertainty.includes(dim)) {
           // Add positive uncertainty
           const uncertainty = uncertaintyData[item.id][`${dim}err1`];
-          if (uncertainty !== null) {
+          if (hasValue(uncertainty)) {
             y = yPosUncertainty(item, dim, uncertainty);
           }
         }
@@ -216,7 +213,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
         if (dimensionsWithUncertainty.includes(dim)) {
           // Add negative uncertainty
           const uncertainty = uncertaintyData[item.id][`${dim}err2`];
-          if (uncertainty !== null) {
+          if (hasValue(uncertainty)) {
             y = yPosUncertainty(item, dim, uncertainty);
           }
         }
@@ -365,7 +362,6 @@ function ParallelCoordinatesChart(chartId, data, options) {
       // Check which brushes need clearing
       let brushesToClear = [];
       d3.selectAll(".brush").each(function(d) {
-        console.log(yScales[d].brushSelectionValue);
         if (yScales[d].brushSelectionValue) {
           brushesToClear.push(d);
         };
@@ -445,7 +441,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
       foreground.style("display", function(d) {
         let isActive = actives.every(function(active) {
           const value = d[active.dimension];
-          if (value === null || value === undefined) {
+          if (!hasValue(value)) {
             if (active.nanBrush === NanBrushState.Block) {
               // If there is a blocking brush, we want to hide the nan values
               return false;
@@ -467,7 +463,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
               return; // Do nothing if no nan brush
             }
             const value = d[dim];
-            if ((value === null || value === undefined)) { // missing value
+            if (!hasValue(value)) { // missing value
               if ((nanBrushesCopy[dim] === NanBrushState.Block)) {
                 isActive = false; // Hide line if it has no and brush is in block mode
               }
@@ -615,7 +611,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
     // Poisiton of a dimension (axis)
     function position(d) {
       var v = dragging[d];
-      return v == null ? xScale(d) : v;
+      return v === null ? xScale(d) : v;
     }
 
     // Transition used ot move an axis to its correct position
