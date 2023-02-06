@@ -610,8 +610,8 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
     // Poisiton of a dimension (axis)
     function position(d) {
-      var v = dragging[d];
-      return v === null ? xScale(d) : v;
+      let v = dragging[d];
+      return !v ? xScale(d) : v;
     }
 
     // Transition used ot move an axis to its correct position
@@ -642,7 +642,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
       if (dragging[d] === undefined) return;
       delete dragging[d];
 
-      transition(d3.select(this)).attr("transform", "translate(" + xScale(d) + ")");
+      transition(d3.select(this)).attr("transform", (d) => "translate(" + xScale(d) + ")");
       transition(foreground).attr("d", path);
       if (uncertaintyAreas !== undefined) {
         transition(uncertaintyAreas).attr("d", area);
