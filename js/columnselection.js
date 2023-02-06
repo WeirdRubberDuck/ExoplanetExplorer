@@ -27,15 +27,15 @@ function renderColumnSelection() {
     .style("width", "50%")
     .style("text-align", "left")
     .style("float", "left")
-    .html(function(d) { 
+    .html(function(d) {
       let isChecked = parallelColumnSelection[d];
       return (
-        `<input type='checkbox' id='${d}' 
-          ${isChecked && 'checked'} 
+        `<input type='checkbox' id='${d}'
+          ${isChecked && 'checked'}
           onchange="onParallelColumnCheckBoxChange(this)"
         >
         <label for='${d}'>${d}</label>`
-      ); 
+      );
     });
 
   d3.select("#column-selection-matrix")
@@ -47,15 +47,14 @@ function renderColumnSelection() {
     .style("width", "50%")
     .style("text-align", "left")
     .style("float", "left")
-    .html(function(d) { 
+    .html(function(d) {
       let isChecked = matrixColumnSelection[d];
       return (
-        `<input type='checkbox' id='${d}' 
-          ${isChecked && 'checked'} 
+        `<input type='checkbox' id='${d}'
+          ${isChecked && 'checked'}
           onchange="onMatrixColumnCheckBoxChange(this)"
         >
         <label for='${d}'>${d}</label>`
-      ); 
+      );
     });
 }
-  

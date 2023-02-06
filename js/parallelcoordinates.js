@@ -3,11 +3,11 @@ function ParallelCoordinatesChart(chartId, data, options) {
   let cfg = {
     w: 800,             // Width of the grid
     h: 600,             // Height of the grid
-    margin: { 
-      top: 50, 
-      right: 50, 
-      bottom: 50, 
-      left: 50 
+    margin: {
+      top: 50,
+      right: 50,
+      bottom: 50,
+      left: 50
     },                    // The margins of the SVG
     strokeWidth: 2,       // The width of the stroke around each blob
     titleFactor: 1.1,     // How much farther than the height of the axes should the title be placed
@@ -41,7 +41,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
   let uncertaintySelection = {};
 
   // Prepare uncertainty data for rendering
-  const dimensionsWithUncertainty = dimensions.filter(d => 
+  const dimensionsWithUncertainty = dimensions.filter(d =>
     (`${d}err1` in uncertaintyData[0]) && (`${d}err2` in uncertaintyData[0])
   );
 
@@ -291,7 +291,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
       .attr("class", "dimension")
       // Translate this element to its right position on the x axis
       .attr("transform", function(d) { return "translate(" + xScale(d) + ")"; })
-    
+
     // Build the axis and title
     axes.append("g")
       .attr("class", (d) => {
@@ -310,7 +310,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
     const brushW = 7;
     axes.append("g")
       .attr("class", "brush")
-      .each(function(d) { 
+      .each(function(d) {
         d3.select(this).call(yScales[d].brush = d3.brushY()
           .extent([[-brushW, yScales[d].range()[1]], [brushW, yScales[d].range()[0]]])
           .on("start", onBrushStart)
@@ -321,7 +321,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
     const NanBrushState = {
       Block: 'Block', // Hide nan values
-      Filter: 'Filter', // Filter nan values / missing 
+      Filter: 'Filter', // Filter nan values / missing
     };
 
     // A value => block out nan values
@@ -380,7 +380,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
           .call(yScales[d].brush.clear);
       });
       nanBrushes = {};
-      
+
       brush();
       d3.selectAll(".nanBrush").attr("fill", "darkgray")
 
@@ -435,7 +435,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
             delete nanBrushesCopy[d];
           }
         });
-      
+
       let selected = [];
       // Update foreground to only display selected values
       foreground.style("display", function(d) {
@@ -452,7 +452,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
           let result = active.extent[0] <= scaledValue && scaledValue <= active.extent[1];
           return result;
         });
-        
+
         // When no selectors are active, all data should be visible.
         isActive = (actives.length === 0 ) ? true : isActive;
 
@@ -475,7 +475,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
             }
           })
         }
-      
+
         // Only render rows that are active across all selectors
         if (isActive) selected.push(d);
         return (isActive) ? null : "none";
@@ -497,7 +497,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
     const lineTextColor = "rgb(200, 200, 200)";
 
     const line = d3.line()([
-      [0 - linexMarginLeft, lineY], 
+      [0 - linexMarginLeft, lineY],
       [cfg.w + linexMarginRight, lineY]
     ]);
 
@@ -539,20 +539,20 @@ function ParallelCoordinatesChart(chartId, data, options) {
     };
 
     if (uncertaintyData && uncertaintyData.length > 0) {
-      renderCheckBoxes(); 
+      renderCheckBoxes();
     }
 
     const onCheckBoxClick = (dim) => {
       // Toggle uncertainty
       uncertaintySelection[dim] = !uncertaintySelection[dim];
       renderCheckBoxes();
-      
+
       // Rerender
       element.render();
     };
 
     function renderCheckBoxes() {
-      const checkboxSize = 12; 
+      const checkboxSize = 12;
       let boxes = axes.append("rect")
         .filter((d) => { return (dimensionsWithUncertainty.includes(d)); })
         .attr("class", "uncertaintyCheckbox")
@@ -578,7 +578,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
         const checkmarkPath = () => {
           const y = lineY + checkboxSize/2;
           return d3.line()([
-            [0.2 * checkboxSize, y + 0.5 * checkboxSize], 
+            [0.2 * checkboxSize, y + 0.5 * checkboxSize],
             [0.4 * checkboxSize, y + 0.69 * checkboxSize],
             [0.8 * checkboxSize, y + 0.2 * checkboxSize],
           ]);
@@ -586,7 +586,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
 
         // Checkmark (always rendered, but not visible with white background)
         axes.append("path")
-          .filter((d, index) => { 
+          .filter((d, index) => {
             // Only show if there is uncertainty columns
             return (`${d}err1` in uncertaintyData[0]) && (`${d}err2` in uncertaintyData[0]);
           })
@@ -710,7 +710,7 @@ function ParallelCoordinatesChart(chartId, data, options) {
       return;
     }
     let fadeOpacity = 0.001;
-  
+
     // Dim all but the current line
     d3.selectAll(`.parallelLine.${chartId}`)
       .filter((item) => {
@@ -719,13 +719,13 @@ function ParallelCoordinatesChart(chartId, data, options) {
       .transition()
       .duration(200)
       .style("opacity", fadeOpacity);
-  
+
     // Thicken and highlight current line
     d3.select(`#line-${d.id}`)
       .transition(200)
       .style("stroke-width", 1.5 * cfg.strokeWidth + "px")
       .style("opacity", 1.0);
-  
+
     element.renderUncertaintyShape(d);
   }
 
@@ -741,10 +741,10 @@ function ParallelCoordinatesChart(chartId, data, options) {
       .duration(200)
       .style("stroke-width", cfg.strokeWidth + "px")
       .style("opacity", cfg.lineOpacity);
-  
+
     element.removeUncertaintyShape();
-  } 
+  }
 
   return element;
-  
+
 } //ParallelCoordinates

@@ -66,7 +66,7 @@ function updateColorMap() {
   if (isNumeric) {
     // Get only valid numbers
     values = values.map(d => parseFloat(d)).filter(d => !isNaN(d));
-    colorScale = d3.scaleSequential() 
+    colorScale = d3.scaleSequential()
       .domain(d3.extent(values))
       .interpolator(d3.interpolateViridis);
   }
@@ -79,7 +79,7 @@ function updateColorMap() {
 
     colorScale = d3.scaleOrdinal()
       .domain(uniqueCategories.sort())
-      .range(uniqueCategories.map((val, i) => 
+      .range(uniqueCategories.map((val, i) =>
         d3.interpolateViridis(i / (uniqueCategories.length - 1))
       ));
   }
@@ -111,7 +111,7 @@ function updateColorMap() {
         })
         .on("end", (event, d) => {
           updateChartColorMapping();
-        }));      
+        }));
 
     d3.select("#left-color-handle")
       .append("input")

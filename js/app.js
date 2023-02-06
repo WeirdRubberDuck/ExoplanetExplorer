@@ -2,7 +2,7 @@
 //////////////////////// Variables ///////////////////////////
 //////////////////////////////////////////////////////////////
 
-// Data structures for full dataset. Not that the ID of each planet corresponds 
+// Data structures for full dataset. Not that the ID of each planet corresponds
 // to the index in these table
 let fullData = undefined;
 let uncertaintyData = undefined; // Just the uncertainty columns
@@ -32,7 +32,7 @@ function isNotNullNorUndefined(o) {
 };
 
 function loadData() {
-  // Note that the data variable was created in the data preparation step and 
+  // Note that the data variable was created in the data preparation step and
   // is available in a separate js file
   var row = 0;
 
@@ -54,11 +54,11 @@ function loadData() {
     let uncertaintyEntry = {};
     for (const key in item) {
       // Skip some columns completely
-      if (key.endsWith("lim") || 
+      if (key.endsWith("lim") ||
           key.endsWith("apogee") || // for now, skip metallicity cols
           key.endsWith("galah") || // for now, skip metallicity cols
           key.startsWith("molecule") || // and molecule columns
-          columnsToRemove.includes(key)) 
+          columnsToRemove.includes(key))
       {
         continue;
       }
@@ -102,7 +102,7 @@ function loadData() {
 
   // Default parallel columns
   const pcDefaultColumns = [
-    "discoverymethod", "sy_snum", "sy_pnum", "ESM", "TSM", "pl_bmasse", 
+    "discoverymethod", "sy_snum", "sy_pnum", "ESM", "TSM", "pl_bmasse",
     "pl_rade", "pl_orbincl", "pl_Teq"
   ];
   pcDefaultColumns.forEach(col => {
@@ -121,12 +121,17 @@ function loadData() {
   updateCharts();
 }
 
+let _lastRowsToShow = undefined;
 async function updateFromOpenSpace() {
   if (!openspace) {
     return;
   }
   let result = await openspace.getPropertyValue("Modules.ExoplanetsExpertTool.FilteredDataRows");
   rowsToShow = Object.values(result);
+
+  if (_lastRowsToShow && compareArrays(_lastRowsToShow, rowsToShow)) {
+    return;
+  }
 
   dataToShow = fullData;
 
@@ -137,6 +142,24 @@ async function updateFromOpenSpace() {
 
   updateColorMap();
   updateCharts();
+  _lastRowsToShow = rowsToShow;
+}
+
+let updateTimer = undefined;
+function onCheckboxAlwaysGetRowsChange(element) {
+  let shouldAutoUpdate  = element.checked;
+
+  // Disable the button
+  document.getElementById('get-rows-button').disabled = shouldAutoUpdate;
+
+  if (shouldAutoUpdate) {
+    // Start timer for getting data, every X second
+    let seconds = 1;
+    updateTimer = setInterval(() => { updateFromOpenSpace(); }, seconds * 1000);
+  }
+  else {
+    clearInterval(updateTimer);
+  }
 }
 
 async function setSelectionInOpenSpace() {
@@ -169,10 +192,10 @@ function sortDataFromTableOrder() {
 
     if (isNaN(a[c]) && isNaN(b[c])) { // string
       // Note flipped order for strings
-      return sortAscending ? 
+      return sortAscending ?
         d3.descending(a[c].toLowerCase(), b[c].toLowerCase()) :
         d3.ascending(a[c].toLowerCase(), b[c].toLowerCase());
-    } 
+    }
     else { // number
       let l = Number.parseFloat(a[c]);
       let r = Number.parseFloat(b[c]);
@@ -278,9 +301,9 @@ function drawMetaDataTable() {
   trows.selectAll("td")
     .data(row => row.slice(1)) // remove first col
     .enter().append("td")
-    .text(function(d) { 
-      if (isNaN(d)) { 
-        return d; 
+    .text(function(d) {
+      if (isNaN(d)) {
+        return d;
       }
       // is a number
       return Number.parseFloat(d).toFixed(2);
@@ -288,7 +311,7 @@ function drawMetaDataTable() {
 
   // Add a column to show the planet bin viz
   header.append("th").text("");
-  trows.selectAll("td.binViz") 
+  trows.selectAll("td.binViz")
     .data(d => [d[4]]) // 4 is index of radius
     .enter()
     .append("td")
@@ -456,7 +479,7 @@ function updateParallelCoordinates() {
     columns: pcColumns,
     uncertaintyData: uncertaintyData
   };
-  
+
   parallelCoordsHandle = new ParallelCoordinatesChart("parallel_coords", dataToShow, pcChartOptions);
   parallelCoordsHandle.render();
 
@@ -478,29 +501,29 @@ function updateScatterPlotMatrix() {
   }
 
   if (matrixColumns.length === 0) {
-    document.getElementById("scatter_plot_matrix").innerHTML = 
+    document.getElementById("scatter_plot_matrix").innerHTML =
       "<p class='hint' id='scattermatrix_hint'><- Select some columns to the left to show scatter plot matrix here</p>";
     return;
   }
-  
+
   document.getElementById("scatter_plot_matrix").innerHTML = "";
 
   ScatterplotMatrix("scatter_plot_matrix", dataToShow, {
     columns: matrixColumns,
     colors: colorFunction, // switch to use same kind of color function as PC
     z: d => d.id, // Color column
-    isFiltered: (id) => { 
+    isFiltered: (id) => {
       return brushSelection ? !brushSelection.includes(id) : false;
     },
     buildItemTooltipHTML: buildItemTooltipHTML,
-    onItemMouseOver: onPointMouseOver, 
+    onItemMouseOver: onPointMouseOver,
     onItemMouseOut: onPointMouseOut
   });
 
   // Add double click listener to axis headers
   d3.select("#scatter_plot_matrix").selectAll(".legend")
     .on("dblclick", (event, d) => {
-      colorColumn = d; 
+      colorColumn = d;
       updateColorMap();
       updateChartColorMapping();
     })

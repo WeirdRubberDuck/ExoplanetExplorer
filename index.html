@@ -6,8 +6,8 @@
 
     <!-- Styles -->
     <link rel="stylesheet" type="text/css" href="./style.css">
-        
-    <!-- Scripts --> 
+
+    <!-- Scripts -->
     <script src="https://d3js.org/d3.v7.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script src="./api/openspace-api.js"></script>
@@ -47,14 +47,18 @@
           <div class="leftpane">
             <div id="connection-status"></div>
             <br/>
-            <button onclick=updateFromOpenSpace()>Get rows from OpenSpace</button>
-            <br/> <br/>
+            <button id="get-rows-button" onclick=updateFromOpenSpace()>Get rows from OpenSpace</button>
+            <br/>
+            <div class="row">
+              <input type="checkbox" onclick="onCheckboxAlwaysGetRowsChange(this)">
+              <span class="checkbox-label">Update automatically when changed in OpenSpace</span>
+            </div>
             <button onclick=setSelectionInOpenSpace()>Send selection to OpenSpace</button>
-            <br/> <br/>
+            <br/>
 
             <h3>Color</h3>
             <p>
-              <label for="colormap-axis-select">Color based on: </label> 
+              <label for="colormap-axis-select">Color based on: </label>
               <select id="colormap-axis-select"></select>
               <div class="row">
                 <div id="left-color-handle"></div>
@@ -62,17 +66,16 @@
                 <div id="right-color-handle"></div>
               </div>
               <div class="row">
-                <input 
-                  type="button" 
-                  id="resetColorMap" 
+                <input
+                  type="button"
+                  id="resetColorMap"
                   value="Reset from current data"
                   onclick="resetColorMapButtonClick()"
                 />
               </div>
               <div class="row">
                 <input type="checkbox" onclick="onCheckboxSetColorFromSelectionChange(this)">
-                  Range always from current selection
-                </input>
+                <span class="checkbox-label">Range always from current selection</span>
               </div>
             </p>
 
@@ -90,10 +93,10 @@
           <div id="middlepane" class="middlepane">
             <div id="all_charts">
               <div class="row" id="selection_controls">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   class="button"
-                  id="clear-brush-button" 
+                  id="clear-brush-button"
                   onclick="parallelCoordsHandle.clearParallelBrushSelection()"
                 >
                   <span class="button__text">Clear selection</span>
@@ -113,7 +116,7 @@
         </div>
 
     </div>
-    
+
     <script src="./js/colormapping.js"></script>
     <script src="./js/columnselection.js"></script>
     <script src="./js/app.js"></script>
@@ -129,7 +132,7 @@
             content.style.maxHeight = null;
           } else {
             content.style.maxHeight = content.scrollHeight + "px";
-          } 
+          }
         });
       }
     </script>

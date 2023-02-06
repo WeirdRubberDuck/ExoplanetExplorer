@@ -3,7 +3,7 @@
 // https://observablehq.com/@d3/splom
 
 // Based on that example, but updated to:
-// - handle any color scale and 
+// - handle any color scale and
 // - hide upper plots
 // - minimum height
 
@@ -25,7 +25,7 @@ function ScatterplotMatrix(chartId, data, {
   zDomain, // array of z-values
   fillOpacity = 0.7, // opacity of the dots
   colors = d3.schemeCategory10, // array of colors for z
-  isFiltered = (z) => false, // function that decides if a point with a certain ID (z-value) is filtered 
+  isFiltered = (z) => false, // function that decides if a point with a certain ID (z-value) is filtered
   onItemMouseOver = undefined,
   onItemMouseOut = undefined,
   buildItemTooltipHTML = undefined,
@@ -75,11 +75,11 @@ function ScatterplotMatrix(chartId, data, {
     .data(xScales)
     .join("g")
       .attr("transform", (d, i) => `translate(${i * (cellWidth + padding)},0)`)
-      .each(function(xScale, i) { 
+      .each(function(xScale, i) {
         if (hideLowerPlots && i === 0) {
           return ""; // Hide first axis
         }
-        return d3.select(this).call(xAxis.scale(xScale)); 
+        return d3.select(this).call(xAxis.scale(xScale));
       })
       // TODO: bring back lines
       // .call(g => g.select(".domain").remove())
@@ -93,11 +93,11 @@ function ScatterplotMatrix(chartId, data, {
     .data(yScales)
     .join("g")
       .attr("transform", (d, i) => `translate(${allCellsWidth},${i * (cellHeight + padding)})`)
-      .each(function(yScale, i) { 
+      .each(function(yScale, i) {
         if (hideLowerPlots && i === yScales.length - 1) {
           return ""; // Hide last axis
         }
-        return d3.select(this).call(yAxis.scale(yScale)); 
+        return d3.select(this).call(yAxis.scale(yScale));
       })
       // TODO: bring back lines
       // .call(g => g.select(".domain").remove())
