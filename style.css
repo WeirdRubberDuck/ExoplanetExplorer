@@ -77,7 +77,7 @@ html::-webkit-scrollbar {
 /* OpenSpace logo */
 #openspace-icon {
   height: 3.5em;
-  position: fixed;
+  position: absolute;
   left: 0;
   top: 0.2em;
 }
@@ -93,6 +93,10 @@ html::-webkit-scrollbar {
   justify-content: center;
   align-items: center;
   padding: 0.5em;
+}
+
+.leftpane .row {
+  max-width: 90%;
 }
 
 .row#selection_controls {
@@ -190,7 +194,6 @@ tr.highlighted {
   border: none;
   text-align: left;
   outline: none;
-  font-size: 15px;
 }
 
 .active, .collapsible:hover {
@@ -210,11 +213,12 @@ tr.highlighted {
 }
 
 .collapsible-content {
-  padding: 0 18px;
+  padding: 0 6px;
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.2s ease-out;
   background-color: #f1f1f1;
+  font-size: small;
 }
 
 .description {
@@ -224,14 +228,14 @@ tr.highlighted {
 }
 
 #column-selection {
-  width: 90%;
+  width: 100%;
   margin: auto;
 }
 
 .column-selection-content li {
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  /* text-overflow: ellipsis; */
 }
 
 .checkbox-label {

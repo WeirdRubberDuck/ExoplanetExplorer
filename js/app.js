@@ -55,8 +55,8 @@ function loadData() {
     for (const key in item) {
       // Skip some columns completely
       if (key.endsWith("lim") ||
-          key.endsWith("apogee") || // for now, skip metallicity cols
-          key.endsWith("galah") || // for now, skip metallicity cols
+          // key.endsWith("apogee") || // for now, skip metallicity cols
+          // key.endsWith("galah") || // for now, skip metallicity cols
           key.startsWith("molecule") || // and molecule columns
           columnsToRemove.includes(key))
       {
@@ -89,16 +89,12 @@ function loadData() {
     }
     parallelColumnSelection[key] = false;
 
-    // Find the first value in the data that exists and check if it is a number or nor
+    // Find the first value in the data that exists and check if it is a number or not
     const item = fullData.find((o) => isNotNullNorUndefined(o[key]));
     if (item && !isNaN(item[key])) {
       matrixColumnSelection[key] = false;
     }
   }
-
-  // Default matrix columns
-  // matrixColumnSelection.ra = true;
-  // matrixColumnSelection.dec = true;
 
   // Default parallel columns
   const pcDefaultColumns = [
