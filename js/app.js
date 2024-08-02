@@ -122,7 +122,7 @@ async function updateFromOpenSpace() {
   if (!openspace) {
     return;
   }
-  let result = await openspace.getPropertyValue("Modules.ExoplanetsExpertTool.FilteredDataRows");
+  let result = await openspace.propertyValue("Modules.ExoplanetsExpertTool.FilteredDataRows");
   rowsToShow = Object.values(result);
 
   if (_lastRowsToShow && compareArrays(_lastRowsToShow, rowsToShow)) {
